@@ -32,13 +32,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(req -> req.requestMatchers("v3/api-docs/**" ,"/swagger-ui/**", "/v1/auth/register")
+                .authorizeHttpRequests(req -> req
+                        .requestMatchers("v3/api-docs/**", "/swagger-ui/**", "/v1/auth/register", "/v1/auth/login")
                         .permitAll()
                         .anyRequest().authenticated()
-                ).sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                )
+                .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-         return httpSecurity.build();
+        return httpSecurity.build();
     }
  @Bean
     public AuthenticationProvider authenticationProvider() {

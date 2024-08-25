@@ -23,12 +23,19 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TokenResponse createUser(UserRequest userRequest) {
+    public UserModel createUser(UserRequest userRequest) {
         return Optional.of(userRequest)
                 .map(this::mapToEntity)
                 .map(userRepository::save)
-                .map(userCreated -> jwtService.generateToken(userCreated.getId()))
-                .orElseThrow(() -> new RuntimeException(" Error No se puede crear el usuario"));
+                .orElseThrow(() -> new RuntimeException("Error: No se puede crear el usuario"));
+    }
+
+    @Override
+    public TokenResponse loginUser(String email, String password) {
+        return userRepository.findByEmail(email)
+                .filter(user -> user.getPassword().equals(password))
+                .map(user -> jwtService.generateToken(user.getId()))
+                .orElseThrow(() -> new RuntimeException("Error: Credenciales inválidas"));
     }
 
     @Override
@@ -39,30 +46,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public List<UserModel> getAllUsers(String token) {
-        Long idToken = Long.parseLong(token);
-        System.out.println("el id recibido del token es : "+ idToken);
-        if (token == null) {
-            throw new RuntimeException("Token inválido");
-        }
-
-
-        Optional<UserModel> userOptional = userRepository.findById(idToken);
-        if (userOptional.isPresent()) {
-            try {
-                 UserModel user = userOptional.get();
-                 if(user.getRole().equals("ADMIN")){
-                     return userRepository.findAll();
-                 }
-                 else{
-                     throw new RuntimeException("El usuario no tiene role ADMIN");
-                 }
-
-            } catch (Exception e) {
-                throw new RuntimeException("Error al Listar todos los usuarios");
-            }
-        } else {
-            throw new RuntimeException("Usuario no encontrado");
-        }
+        return userRepository.findAll();
 
     }
 
@@ -92,29 +76,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void deleteUserAdmin(String token , Long idElim) {
-        Long idToken = Long.parseLong(token);
-        System.out.println("el id recibido del token es : "+ idToken);
-
-        if (token == null) {
-            throw new RuntimeException("Token inválido");
-        }
-
-
-        Optional<UserModel> userOptional = userRepository.findById(idToken);
-        if (userOptional.isPresent()) {
-
-                UserModel user = userOptional.get();
-                if(user.getRole().equals("ADMIN")){
-                    userRepository.deleteById(idElim);
-                }
-                else{
-                    throw new RuntimeException("Usuario no es admin");
-                }
-
-
-        } else {
-            throw new RuntimeException("Usuario no encontrado");
-        }
+        userRepository.deleteById(idElim);
     }
 
     @Override
@@ -147,19 +109,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void updateUserAdmin(String token,Long idUser, UserRequest userRequest) {
-        if (token == null) {
-            throw new RuntimeException("Token inválido");
-        }
-
-        Long idToken = Long.parseLong(token);
-        System.out.println("El ID recibido del token es: " + idToken);
-
-        UserModel user = userRepository.findById(idToken)
-                .orElseThrow(() -> new RuntimeException("Usuario del token no encontrado"));
-
-        if (!"ADMIN".equals(user.getRole())) {
-            throw new RuntimeException("Usuario no es admin");
-        }
 
         UserModel userUpdate = userRepository.findById(idUser)
                 .orElseThrow(() -> new RuntimeException("Usuario a actualizar no encontrado"));

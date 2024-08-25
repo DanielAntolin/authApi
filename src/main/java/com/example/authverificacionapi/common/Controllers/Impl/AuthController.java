@@ -3,6 +3,7 @@ package com.example.authverificacionapi.common.Controllers.Impl;
 import com.example.authverificacionapi.Services.AuthService;
 import com.example.authverificacionapi.Services.JwtService;
 import com.example.authverificacionapi.common.Controllers.AuthApi;
+import com.example.authverificacionapi.common.dtos.LoginRequest;
 import com.example.authverificacionapi.common.dtos.TokenResponse;
 import com.example.authverificacionapi.common.dtos.UserRequest;
 import com.example.authverificacionapi.common.entities.UserModel;
@@ -24,8 +25,13 @@ public class AuthController implements AuthApi {
     }
 
     @Override
-    public ResponseEntity<TokenResponse> createUser(UserRequest userRequest) {
+    public ResponseEntity<UserModel> createUser(UserRequest userRequest) {
         return ResponseEntity.ok(authService.createUser(userRequest));
+    }
+
+    @Override
+    public ResponseEntity<TokenResponse> loginUser(LoginRequest loginRequest) {
+        return ResponseEntity.ok(authService.loginUser(loginRequest.getEmail(), loginRequest.getPassword()));
     }
 
     @Override
@@ -68,13 +74,6 @@ public class AuthController implements AuthApi {
         authService.updateUserAdmin(userId, id, userRequest);
         return ResponseEntity.ok().build();
     }
-/*
-    @Override
-    public ResponseEntity<UserModel> getUser(String userId) {
-        return ResponseEntity.ok(authService.getUser(Long.parseLong(userId)));
-    }
-*/
-
 
 
 }
